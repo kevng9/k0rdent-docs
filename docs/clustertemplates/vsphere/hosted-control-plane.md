@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Management Kubernetes cluster (v1.28+) deployed on vSphere with HMC installed
+- Management Kubernetes cluster (v1.28+) deployed on vSphere with kcm installed
   on it
 
 Keep in mind that all control plane components for all managed clusters will
@@ -22,7 +22,7 @@ check them in the [template parameters](template-parameters.md) section.
 > (e.g., the `kube-vip` annotation in the example below).
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: cluster-1

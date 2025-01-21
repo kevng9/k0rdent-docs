@@ -59,12 +59,12 @@ Full list of the bastion configuration options could be fould in [CAPA docs](htt
 The resulting `ClusterDeployment` can look like this:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: cluster-1
 spec:
-  template: aws-standalone-cp-0-0-2
+  template: aws-standalone-cp-0-0-5
   credential: aws-cred
   config:
     sshKeyName: foobar
@@ -83,12 +83,12 @@ EKS templates use the parameters similar to AWS and resulting EKS
 `ClusterDeployment` can look like this:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: cluster-1
 spec:
-  template: aws-eks-0-0-2
+  template: aws-eks-0-0-3
   credential: aws-cred
   config:
     sshKeyName: foobar

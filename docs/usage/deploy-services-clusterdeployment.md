@@ -8,11 +8,11 @@ Consider the following example:
 > EXAMPLE: `ClusterDeployment` object for AWS Infrastructure Provider with beach-head services
 > 
 > ```yaml
-> apiVersion: hmc.mirantis.com/v1alpha1
+> apiVersion: k0rdent.mirantis.com/v1alpha1
 > kind: ClusterDeployment
 > metadata:
 >   name: my-managed-cluster
->   namespace: hmc-system
+>   namespace: kcm-system
 > spec:
 >   config:
 >     clusterNetwork:
@@ -75,11 +75,11 @@ the service template for kyverno.
 > EXAMPLE: `ServiceTemplate` object for kyverno version 3.2.6
 > The `ServiceTemplate` for kyverno:
 > ```yaml
-> apiVersion: hmc.mirantis.com/v1alpha1
+> apiVersion: k0rdent.mirantis.com/v1alpha1
 > kind: ServiceTemplate
 > metadata:
 >   name: kyverno-3-2-6
->   namespace: hmc-system
+>   namespace: kcm-system
 > spec:
 >   helm:
 >     chartSpec:
@@ -88,11 +88,11 @@ the service template for kyverno.
 >       reconcileStrategy: ChartVersion
 >       sourceRef:
 >         kind: HelmRepository
->         name: hmc-templates
+>         name: kcm-templates
 >       version: 3.2.6
 > ```
 
-The `hmc-templates` helm repository hosts the actual chart for kyverno version 3.2.6.
+The `kcm-templates` helm repository hosts the actual chart for kyverno version 3.2.6.
 For more details see the [Bring your own Templates](../template/byo-templates.md) guide.
 
 ### Configuring Custom Values
@@ -101,12 +101,12 @@ Helm values can be passed to each beach-head services with the `.spec.services[]
 
 EXAMPLE: 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   . . .
   name: my-clusterdeployment
-  namespace: hmc-system
+  namespace: kcm-system
   . . .
 spec:
   . . .
@@ -125,13 +125,13 @@ spec:
         victoriametrics:
           vmauth:
             ingress:
-              host: vmauth.hmc0.example.net
+              host: vmauth.kcm0.example.net
             credentials:
               username: motel
               password: motel
         grafana:
           ingress:
-            host: grafana.hmc0.example.net
+            host: grafana.kcm0.example.net
         cert-manager:
           email: mail@example.net
     - template: ingress-nginx-4-11-3
@@ -148,11 +148,11 @@ Using Sveltos templating feature, we can also write templates which can be usefu
 
 EXAMPLE:
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: my-clusterdeployment
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   . . .
   servicesPriority: 100
@@ -176,13 +176,13 @@ The `.status.services` field of the `ClusterDeployment` object shows the status 
 
 > EXAMPLE: Status for beach-head services deployed with `ClusterDeployment`
 > ```yaml
-> apiVersion: hmc.mirantis.com/v1alpha1
+> apiVersion: k0rdent.mirantis.com/v1alpha1
 > kind: ClusterDeployment
 > metadata:
 >   . . .
 >   generation: 1
 >   name: wali-aws-dev
->   namespace: hmc-system
+>   namespace: kcm-system
 >   . . .
 > spec:
 >   . . .
@@ -197,7 +197,7 @@ The `.status.services` field of the `ClusterDeployment` object shows the status 
 >   observedGeneration: 1
 >   services:
 >   - clusterName: my-managed-cluster
->     clusterNamespace: hmc-system
+>     clusterNamespace: kcm-system
 >     conditions:
 >     - lastTransitionTime: "2024-12-11T23:03:05Z"
 >       message: ""
@@ -243,13 +243,13 @@ The example below removes `kyverno-3-2-6` so its status also removed from `.stat
 
 > EAMPLE: Showing removal of `kyverno-3-2-6` from `ClusterDeployment`
 > ```yaml
-> apiVersion: hmc.mirantis.com/v1alpha1
+> apiVersion: k0rdent.mirantis.com/v1alpha1
 > kind: ClusterDeployment
 > metadata:
 >   . . .
 >   generation: 2
 >   name: wali-aws-dev
->   namespace: hmc-system
+>   namespace: kcm-system
 >   . . .
 > spec:
 >   . . .
@@ -264,7 +264,7 @@ The example below removes `kyverno-3-2-6` so its status also removed from `.stat
 >   observedGeneration: 2
 >   services:
 >   - clusterName: wali-aws-dev
->     clusterNamespace: hmc-system
+>     clusterNamespace: kcm-system
 >     conditions:
 >     - lastTransitionTime: "2024-12-11T23:15:45Z"
 >       message: ""

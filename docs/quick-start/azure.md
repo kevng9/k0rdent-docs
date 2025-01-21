@@ -105,7 +105,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: azure-cluster-identity-secret
-  namespace: hmc-system
+  namespace: kcm-system
 stringData:
   clientSecret: <password> # Password retrieved from the Service Principal
 type: Opaque
@@ -135,13 +135,13 @@ metadata:
   labels:
     clusterctl.cluster.x-k8s.io/move-hierarchy: "true"
   name: azure-cluster-identity
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   allowedNamespaces: {}
   clientID: <appId> # The App ID retrieved from the Service Principal above in Step 2
   clientSecret:
     name: azure-cluster-identity-secret
-    namespace: hmc-system
+    namespace: kcm-system
   tenantID: <tenant> # The Tenant ID retrieved from the Service Principal above in Step 2
   type: ServicePrincipal
 ```
@@ -163,17 +163,17 @@ Create a YAML with the specification of our credential and save it as
 > created in the previous step.
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: Credential
 metadata:
   name: azure-cluster-identity-cred
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   identityRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: AzureClusterIdentity
     name: azure-cluster-identity
-    namespace: hmc-system
+    namespace: kcm-system
 ```
 
 Apply the YAML to your cluster:
@@ -192,11 +192,11 @@ Create a YAML with the specification of your managed Cluster and save it as
 Here is an example of a `ClusterDeployment` YAML file:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: my-azure-clusterdeployment1
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   template: azure-standalone-cp-0-0-3
   credential: azure-cluster-identity-cred
@@ -209,6 +209,10 @@ spec:
       vmSize: Standard_A4_v2
 ```
 
+> NOTE:
+> To see available versions for `Azure` template run `kubectl get clustertemplate -n kcm-system`.
+>
+
 Apply the YAML to your management cluster:
 
 ```shell
@@ -219,13 +223,13 @@ There will be a delay as the cluster finishes provisioning. Follow the
 provisioning process with the following command:
 
 ```shell
-kubectl -n hmc-system get clusterdeployment.hmc.mirantis.com my-azure-clusterdeployment1 --watch
+kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-azure-clusterdeployment1 --watch
 ```
 
 After the cluster is `Ready`, you can access it via the kubeconfig, like this:
 
 ```shell
-kubectl -n hmc-system get secret my-azure-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-azure-clusterdeployment1-kubeconfig.kubeconfig
+kubectl -n kcm-system get secret my-azure-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-azure-clusterdeployment1-kubeconfig.kubeconfig
 ```
 
 ```shell

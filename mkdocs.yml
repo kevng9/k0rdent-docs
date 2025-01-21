@@ -77,7 +77,8 @@ nav:
     - OpenStack: quick-start/openstack.md
   - Usage:
       - Installation Guide: usage/installation.md
-      - Air-gapped Installation Guide: usage/airgap.md
+      - Adopting Existing Clusters Guide: usage/adopt-existing-cluster.md
+#     - Air-gapped Installation Guide: usage/airgap.md
       - Create Cluster Deployment: usage/create-cluster-deployment.md
       - Cluster Updates: usage/cluster-update.md
       - k0rdent Upgrade: usage/upgrade.md
@@ -101,5 +102,10 @@ nav:
       - Distribution: credential/distribution.md
   - RBAC:
       - Overview: rbac/roles.md
-  - Architecture: architecture.md
+  - Disaster Recovery:
+      - Overview: disaster-recovery/overview.md
+      - Customization: disaster-recovery/customization.md
+  - Architecture:
+      - Overview: architecture/architecture.md
+      - k0rdent initialization process: architecture/initialization.md
   - Glossary: glossary.md

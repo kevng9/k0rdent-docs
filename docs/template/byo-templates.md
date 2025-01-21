@@ -1,6 +1,6 @@
 # Bring your own Templates
 
-This guide outlines the steps to bring your own Template to HMC.
+This guide outlines the steps to bring your own Template to kcm.
 
 ## Create a Source Object
 
@@ -13,9 +13,10 @@ A source object defines where the Helm chart is stored. The source can be one of
 [Bucket](https://fluxcd.io/flux/components/source/buckets/).
 
 > NOTES:
+>
 > 1. The source object must exist in the same namespace as the Template.
 > 2. For cluster-scoped `ProviderTemplates`, the referenced source must reside in the **system** namespace
-> (default: `hmc-system`).
+> (default: `kcm-system`).
 
 ### Example: Custom Source Object with HelmRepository Kind
 
@@ -24,7 +25,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: custom-templates-repo
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   insecure: true
   interval: 10m0s
@@ -69,26 +70,26 @@ The controller will automatically create the `HelmChart` object based on the cha
 > NOTE:
 > `ClusterTemplate` and `ServiceTemplate` objects should reside in the same namespace as the `ClusterDeployment`
 > referencing them. The `ClusterDeployment` can't reference the Template from another namespace (the creation request will
-> be declined by the admission webhook). All `ClusterTemplates` and `ServiceTemplates` shipped with HMC reside in the
-> system namespace (defaults to `hmc-system`). To get the instructions on how to distribute Templates along multiple
+> be declined by the admission webhook). All `ClusterTemplates` and `ServiceTemplates` shipped with kcm reside in the
+> system namespace (defaults to `kcm-system`). To get the instructions on how to distribute Templates along multiple
 > namespaces, read [Template Life Cycle Management](main.md#template-life-cycle-management).
 
 ### Example: Custom ClusterTemplate with the Chart Definition to Create a new HelmChart
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterTemplate
 metadata:
   name: custom-template
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   providers:
-    - bootstrap-k0smotron
-    - control-plane-k0smotron
+    - bootstrap-k0sproject-k0smotron
+    - control-plane-k0sproject-k0smotron
     - infrastructure-openstack
   helm:
     chartSpec:
-      chart: os-k0smotron
+      chart: os-k0sproject-k0smotron
       sourceRef:
         kind: HelmRepository
         name: custom-templates-repo
@@ -97,18 +98,17 @@ spec:
 ### Example: Custom ClusterTemplate Referencing an Existing HelmChart object
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterTemplate
 metadata:
   name: custom-template
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   helm:
     chartRef:
       kind: HelmChart
       name: custom-chart
 ```
-
 
 ## Required and exposed providers definition
 
@@ -127,8 +127,8 @@ For example:
 ```yaml
 spec:
   providers:
-  - bootstrap-k0smotron
-  - control-plane-k0smotron
+  - bootstrap-k0sproject-k0smotron
+  - control-plane-k0sproject-k0smotron
   - infrastructure-aws
 ```
 
@@ -136,7 +136,7 @@ spec:
 
 ```bash
 annotations:
-  cluster.x-k8s.io/provider: infrastructure-aws, control-plane-k0smotron, bootstrap-k0smotron
+  cluster.x-k8s.io/provider: infrastructure-aws, control-plane-k0sproject-k0smotron, bootstrap-k0sproject-k0smotron
 ```
 
 ## Compatibility attributes
@@ -162,7 +162,7 @@ For the core `CAPI` Template values should be empty.
     Example with the `.spec`:
 
     ```yaml
-    apiVersion: hmc.mirantis.com/v1alpha1
+    apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: ProviderTemplate
     # ...
     spec:
@@ -199,18 +199,18 @@ and the value is the provider contract version required to be supported by the p
     Example with the `.spec`:
 
     ```yaml
-    apiVersion: hmc.mirantis.com/v1alpha1
+    apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: ClusterTemplate
     # ...
     spec:
       k8sVersion: 1.30.0 # only exact semantic version is applicable
       providers:
-      - bootstrap-k0smotron
-      - control-plane-k0smotron
+      - bootstrap-k0sproject-k0smotron
+      - control-plane-k0sproject-k0smotron
       - infrastructure-aws
       providerContracts:
-        bootstrap-k0smotron: v1beta1 # only a single contract version is applicable
-        control-plane-k0smotron: v1beta1
+        bootstrap-k0sproject-k0smotron: v1beta1 # only a single contract version is applicable
+        control-plane-k0sproject-k0smotron: v1beta1
         infrastructure-aws: v1beta2
     ```
 
@@ -218,11 +218,11 @@ and the value is the provider contract version required to be supported by the p
 
     ```yaml
     annotations:
-      cluster.x-k8s.io/provider: infrastructure-aws, control-plane-k0smotron, bootstrap-k0smotron
-      cluster.x-k8s.io/bootstrap-k0smotron: v1beta1
-      cluster.x-k8s.io/control-plane-k0smotron: v1beta1
+      cluster.x-k8s.io/provider: infrastructure-aws, control-plane-k0sproject-k0smotron, bootstrap-k0sproject-k0smotron
+      cluster.x-k8s.io/bootstrap-k0sproject-k0smotron: v1beta1
+      cluster.x-k8s.io/control-plane-k0sproject-k0smotron: v1beta1
       cluster.x-k8s.io/infrastructure-aws: v1beta2
-      hmc.mirantis.com/k8s-version: 1.30.0
+      k0rdent.mirantis.com/k8s-version: 1.30.0
     ```
 
 1. The `ServiceTemplate` resource has dedicated fields to set an compatibility constrained
@@ -232,7 +232,7 @@ Given compatibility values will be then set accordingly in the `.status` field.
     Example with the `.spec`:
 
     ```yaml
-    apiVersion: hmc.mirantis.com/v1alpha1
+    apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: ServiceTemplate
     # ...
     spec:
@@ -242,7 +242,7 @@ Given compatibility values will be then set accordingly in the `.status` field.
     Example with the `annotations` in the `Chart.yaml`:
 
     ```yaml
-    hmc.mirantis.com/k8s-version-constraint: ^1.30.0
+    k0rdent.mirantis.com/k8s-version-constraint: ^1.30.0
     ```
 
 ### Compatibility attributes enforcement
@@ -259,15 +259,15 @@ is not listed in the core `CAPI` `ProviderTemplate` object, the updates to the `
 * if a `ClusterTemplate` object's exact kubernetes version does not satisfy the kubernetes version
 constraint from the related `ServiceTemplate` object, the updates to the `ClusterDeployment` object will be blocked.
 
-## Remove Templates shipped with HMC
+## Remove Templates shipped with kcm
 
-If you need to limit the templates that exist in your HMC installation, follow the instructions below:
+If you need to limit the templates that exist in your kcm installation, follow the instructions below:
 
-1. Get the list of `ProviderTemplates`, `ClusterTemplates` or `ServiceTemplates` shipped with HMC. For example,
+1. Get the list of `ProviderTemplates`, `ClusterTemplates` or `ServiceTemplates` shipped with kcm. For example,
 for `ClusterTemplate` objects, run:
 
     ```bash
-    kubectl get clustertemplates -n hmc-system -l helm.toolkit.fluxcd.io/name=hmc-templates
+    kubectl get clustertemplates -n kcm-system -l helm.toolkit.fluxcd.io/name=kcm-templates
     ```
 
     Example output:
@@ -281,5 +281,5 @@ for `ClusterTemplate` objects, run:
 2. Remove the template from the list using `kubectl delete`. For example:
 
     ```bash
-    kubectl delete clustertemplate -n hmc-system <template-name>
+    kubectl delete clustertemplate -n kcm-system <template-name>
     ```

@@ -38,7 +38,7 @@ any namespace.
 
 ```yaml
 ---
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: Credential
 metadata:
   name: azure-credential
@@ -49,11 +49,11 @@ spec:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: AzureClusterIdentity
     name: azure-cluster-identity
-    namespace: hmc-system
+    namespace: kcm-system
 ```
 
 In the example above `Credential` object is referencing `AzureClusterIdentity`
-which was created in the `hmc-system` namespace.
+which was created in the `kcm-system` namespace.
 
 The `.spec.description` field can be used to provide arbitrary description of the
 object, so user could make a decision which credentials to use if several are
@@ -121,8 +121,33 @@ In k0rdent these Secrets aren't used and will not be added to the
 #### OpenStack
 
 For OpenStack, CAPO relies on a clouds.yaml file.
-In Project 2A, you provide this file in a Kubernetes Secret that references OpenStack credentials
-(ideally application credentials for enhanced security). During reconciliation, HMC
+In k0rdent, you provide this file in a Kubernetes Secret that references OpenStack credentials
+(ideally application credentials for enhanced security). During reconciliation, kcm
 automatically generates the cloud-config required by OpenStack’s cloud-controller-manager.
 
 For more details, refer to the [kcm OpenStack Credential Propagation doc](https://github.com/k0rdent/kcm/blob/main/docs/dev.md#openstack).
+
+
+#### Adopted cluster
+
+Credentials for adopted clusters consist of a secret containing a kubeconfig file to access the existing kubernetes cluster. 
+The kubeconfig file for the cluster should be contained in the value key of the secret object. The following is an example of 
+a secret which contains the kubeconfig for an adopted cluster. To create this secret, first create or obtain a kubeconfig file 
+for the cluster that is being adopted and then run the following command to base64 encode it:
+
+```shell
+cat kubeconfig | base64 -d -w 0
+```
+
+Once you have obtained a base64 encoded kubeconfig file create a secret:
+
+```yaml
+apiVersion: v1
+data:
+  value: <base64 encoded kubeconfig file>
+kind: Secret
+metadata:
+  name: adopted-cluster-kubeconf
+  namespace: <namespace>
+type: Opaque
+```

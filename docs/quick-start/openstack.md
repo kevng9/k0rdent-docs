@@ -1,14 +1,14 @@
 # OpenStack Quick Start
 
 Much of the following includes the process of setting up credentials for OpenStack.
-To better understand how Project 2A uses credentials, read the
+To better understand how k0rdent uses credentials, read the
 [Credential system](../credential/main.md).
 
 ## Prerequisites
 
-### 2A Management Cluster
+### k0rdent Management Cluster
 
-You need a Kubernetes cluster with [2A installed](2a-installation.md).
+You need a Kubernetes cluster with [kcm installed](installation.md).
 
 ### Software prerequisites
 
@@ -28,9 +28,10 @@ This credential should include:
 - OS_IDENTITY_API_VERSION (commonly 3)
 - OS_AUTH_TYPE (e.g., v3applicationcredential)
 
-> Note: Using an Application Credential is strongly recommended because it limits scope and improves security over a raw username/password approach.
+> NOTE:
+> Using an Application Credential is strongly recommended because it limits scope and improves security over a raw username/password approach.
 
-## Step 2: Create the OpenStack Credentials Secret on 2A Management Cluster
+## Step 2: Create the OpenStack Credentials Secret on k0rdent Management Cluster
 
 Create a Kubernetes Secret containing the clouds.yaml that defines your OpenStack environment. Save this as `openstack-cloud-config.yaml` (for example):
 
@@ -39,7 +40,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: openstack-cloud-config
-  namespace: hmc-system
+  namespace: kcm-system
 stringData:
   clouds.yaml: |
     clouds:
@@ -60,24 +61,24 @@ Apply the YAML to your cluster using the following command:
 kubectl apply -f openstack-cloud-config.yaml
 ```
 
-## Step 3: Create the 2A Credential Object
+## Step 3: Create the k0rdent Credential Object
 
 Next, define a Credential that references the Secret from Step 2.
 Save this as `openstack-cluster-identity-cred.yaml`:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: Credential
 metadata:
   name: openstack-cluster-identity-cred
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   description: "OpenStack credentials"
   identityRef:
     apiVersion: v1
     kind: Secret
     name: openstack-cloud-config
-    namespace: hmc-system
+    namespace: kcm-system
 ```
 
 Apply the YAML to your cluster:
@@ -86,10 +87,10 @@ Apply the YAML to your cluster:
 kubectl apply -f openstack-cluster-identity-cred.yaml
 ```
 
-> Note
-> .spec.identityRef.kind hould be Secret.
-> .spec.identityRef.name must match the Secret you created in Step 2.
-> .spec.identityRef.namespace must be the same as the Secret’s namespace (hmc-system).
+> NOTE:
+> 1. .spec.identityRef.kind hould be Secret.
+> 2. .spec.identityRef.name must match the Secret you created in Step 2.
+> 3. .spec.identityRef.namespace must be the same as the Secret’s namespace (kcm-system).
 
 ## Step 4: Create Your First Managed Cluster
 
@@ -99,11 +100,11 @@ Create a YAML with the specification of your Managed Cluster and save it as
 Here is an example:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: my-openstack-cluster-deployment
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   template: openstack-standalone-cp-0-0-1
   credential: openstack-cluster-identity-cred
@@ -123,10 +124,11 @@ spec:
     authURL: <OS_AUTH_URL>
 ```
 
-> [!NOTE]
+> NOTE:
 > 1. spec.template references the OpenStack-specific blueprint (e.g., openstack-standalone-cp-0-0-1).
 > 2. Adjust flavor, image name, and authURL to match your OpenStack environment.
 > 3. For more information about the config options, see the [OpenStack Template Parameters](../clustertemplates/openstack/template-parameters.md).
+> 4. To see available versions for `OpenStack` template run `kubectl get clustertemplate -n kcm-system`.
 
 Apply the YAML to your management cluster:
 
@@ -138,13 +140,13 @@ There will be a delay as the cluster finishes provisioning. Follow the
 provisioning process with the following command:
 
 ```bash
-kubectl -n hmc-system get clusterdeployment.hmc.mirantis.com my-openstack-cluster-deployment --watch
+kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-openstack-cluster-deployment --watch
 ```
 
 After the cluster is `Ready`, you can access it via the kubeconfig, like this:
 
 ```bash
-kubectl -n hmc-system get secret my-openstack-cluster-deployment-kubeconfig -o jsonpath='{.data.value>' | base64 -d > my-openstack-cluster-deployment-kubeconfig.kubeconfig
+kubectl -n kcm-system get secret my-openstack-cluster-deployment-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-openstack-cluster-deployment-kubeconfig.kubeconfig
 ```
 
 ```bash

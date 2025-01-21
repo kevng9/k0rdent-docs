@@ -36,7 +36,8 @@ with the necessary IAM policies and service account.
     export AWS_REGION=<aws-region>
     export AWS_ACCESS_KEY_ID=<admin-user-access-key>
     export AWS_SECRET_ACCESS_KEY=<admin-user-secret-access-key>
-    export AWS_SESSION_TOKEN=<session-token> # Optional. If you are using Multi-Factor Auth.
+    # AWS_SESSION_TOKEN is optional when using Multi-Factor Auth.
+    export AWS_SESSION_TOKEN=<session-token>
     ```
 
 2. After these are set, run this command to create the IAM CloudFormation stack:
@@ -74,11 +75,14 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: aws-cluster-identity-secret
-  namespace: hmc-system
+  namespace: kcm-system
 type: Opaque
 stringData:
   AccessKeyID: AKIAQF+EXAMPLE
   SecretAccessKey: EdJfFar6+example
+  # SessionToken is optional when using Multi-Factor Auth.
+  # SessionToken: IQoJb3JpZ2luX2VjEK7//+example
+
 ```
 
 Apply the YAML to your cluster using the following command:
@@ -90,7 +94,7 @@ kubectl apply -f aws-cluster-identity-secret.yaml
 > WARNING:
 > 
 > The secret must be created in the same `Namespace` where the CAPA provider is
-> running. In case of k0rdent it's currently `hmc-system`. Placing secret in
+> running. In case of k0rdent it's currently `kcm-system`. Placing secret in
 > any other `Namespace` will result in the controller not able to read it.
 
 ## Step 3: Create AWSClusterStaticIdentity Object
@@ -133,17 +137,18 @@ Create a YAML with the specification of your credential and save it as
 > `AWSClusterStaticIdentity` object.
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: Credential
 metadata:
   name: aws-cluster-identity-cred
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
   description: "Credential Example"
   identityRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
     kind: AWSClusterStaticIdentity
     name: aws-cluster-identity
+    namespace: kcm-system
 ```
 
 Apply the YAML to your cluster:
@@ -160,21 +165,29 @@ Create a YAML with the specification of your Cluster Deployment and save it as
 Here is an example of a `ClusterDeployment` YAML file:
 
 ```yaml
-apiVersion: hmc.mirantis.com/v1alpha1
+apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterDeployment
 metadata:
   name: my-aws-clusterdeployment1
-  namespace: hmc-system
+  namespace: kcm-system
 spec:
-  template: aws-standalone-cp-0-0-4
+  template: aws-standalone-cp-0-0-5
   credential: aws-cluster-identity-cred
   config:
-    region: us-west-2
+    region: us-east-2
     controlPlane:
       instanceType: t3.small
     worker:
       instanceType: t3.small
 ```
+
+> WARNING:
+> Don't forget to set proper AWS Region.
+>
+
+> NOTE:
+> To see available versions for `AWS` template run `kubectl get clustertemplate -n kcm-system`.
+>
 
 Apply the YAML to your management cluster:
 
@@ -186,13 +199,13 @@ There will be a delay as the cluster finishes provisioning. Follow the
 provisioning process with the following command:
 
 ```bash
-kubectl -n hmc-system get clusterdeployment.hmc.mirantis.com my-aws-clusterdeployment1 --watch
+kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-aws-clusterdeployment1 --watch
 ```
 
 After the cluster is `Ready`, you can access it via the kubeconfig, like this:
 
 ```bash
-kubectl -n hmc-system get secret my-aws-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-aws-clusterdeployment1-kubeconfig.kubeconfig
+kubectl -n kcm-system get secret my-aws-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-aws-clusterdeployment1-kubeconfig.kubeconfig
 ```
 
 ```bash
